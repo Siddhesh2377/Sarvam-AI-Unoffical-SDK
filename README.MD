@@ -21,7 +21,6 @@ An unofficial Kotlin-based Android SDK for interacting with the Sarvam AI chat A
 
    ```kotlin
    include(":sarvam-sdk")
-   project(":sarvam-sdk").projectDir = file("path/to/sarvam-sdk")
    ```
 
 3. **Add the SDK dependency** in your app `build.gradle.kts`:
@@ -38,10 +37,8 @@ All required network, SSE, Retrofit, and Moshi dependencies are provided transit
 ksp("com.squareup.moshi\:moshi-kotlin-codegen:1.15.0")
 }
 
-````
-
 5. **Configure your API key** in `local.properties`:
-
+````
 ```properties
 SARVAM_API_KEY=sk_...
 ````
