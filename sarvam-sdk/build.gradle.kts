@@ -54,7 +54,7 @@ android {
 }
 
 dependencies {
-    implementation("com.squareup.okhttp3:okhttp-sse:4.12.0")
+    implementation(libs.okhttp.sse)
     implementation(libs.moshi.kotlin)
     ksp(libs.moshi.kotlin.codegen)
     implementation(libs.retrofit)
