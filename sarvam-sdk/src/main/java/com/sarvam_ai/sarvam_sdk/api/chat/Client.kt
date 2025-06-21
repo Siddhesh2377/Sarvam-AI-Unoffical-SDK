@@ -14,22 +14,37 @@ import okhttp3.sse.EventSourceListener
 import okhttp3.sse.EventSources
 import org.json.JSONObject
 
+/**
+ * ApiClient handles chat completions (streaming & non-streaming) against Sarvam AI.
+ */
 object ApiClient {
-    private val moshi = Moshi.Builder()
+    private val moshi: Moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
         .build()
 
-    private val client = OkHttpClient.Builder()
+    private var apiKey: String = ""
+
+    /**
+     * Initialize SDK with custom API key. Call before using streaming.
+     */
+    fun init(apiKey: String) {
+        Log.d("ApiClient", "ApiClient initialized with key: $apiKey")
+        this@ApiClient.apiKey = apiKey
+    }
+
+    private val client: OkHttpClient = OkHttpClient.Builder()
         .addInterceptor { chain ->
             chain.request().newBuilder()
-                .addHeader("Authorization", "Bearer ${BuildConfig.API_KEY}")
+                .addHeader("Authorization", "Bearer $apiKey")
+                .addHeader("Accept", "text/event-stream")          // Request SSE stream
+                .addHeader("Content-Type", "application/json")      // Ensure JSON body
                 .build()
                 .let(chain::proceed)
         }
         .build()
 
     /**
-     * Streaming chat using OkHttp-SSE
+     * Streaming chat via SSE. Emits tokens in real-time.
      */
     fun streamChat(
         request: ChatRequest,
@@ -37,7 +52,6 @@ object ApiClient {
         onComplete: () -> Unit,
         onError: (Throwable) -> Unit
     ) {
-        // 1) dump outgoing JSON
         val json = moshi.adapter(ChatRequest::class.java)
             .toJson(request.copy(stream = true))
         Log.d("ApiClient", "Outgoing JSON → $json")
@@ -62,24 +76,36 @@ object ApiClient {
                         return
                     }
 
-                    // parse the chunk
                     val delta = JSONObject(data)
                         .getJSONArray("choices")
                         .getJSONObject(0)
                         .getJSONObject("delta")
 
-                    // safely extract content, ignoring JSON-null and empty strings
-                    val token = delta.optString("content")
+                    // Only emit actual content
+                    val token = delta.optString("content", null)
                     if (delta.isNull("content")) return
-
-                    if (!token.isNullOrEmpty()) {
+                    if (!token.isNullOrBlank()) {
                         onTokenReceived(token)
                     }
                 }
 
-
-                override fun onFailure(source: EventSource, t: Throwable?, response: Response?) {
-                    onError(t ?: Throwable("Unknown SSE error"))
+                override fun onFailure(
+                    source: EventSource,
+                    t: Throwable?,
+                    response: Response?
+                ) {
+                    // Surface HTTP errors with body if available
+                    if (t != null) {
+                        onError(t)
+                    } else if (response != null) {
+                        val errBody = response.body?.string()
+                        onError(
+                            Throwable("HTTP ${response.code} ${response.message}" +
+                                    (errBody?.let { ": $it" } ?: ""))
+                        )
+                    } else {
+                        onError(Throwable("Unknown SSE error"))
+                    }
                     source.cancel()
                 }
             })

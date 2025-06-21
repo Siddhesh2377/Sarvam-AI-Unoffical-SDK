@@ -1,12 +1,13 @@
-package com.dark.sarvamai
+package com.dark.sarvamai.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.sarvam_ai.sarvam_sdk.api.chat.ApiClient.streamChat
+import com.sarvam_ai.sarvam_sdk.api.chat.ApiClient
 import com.sarvam_ai.sarvam_sdk.api.chat.ChatRequest
 import com.sarvam_ai.sarvam_sdk.api.chat.Message
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlin.collections.plus
 
 class ChatViewModel : ViewModel() {
     private val _messages = MutableStateFlow<List<Message>>(
@@ -27,7 +28,7 @@ class ChatViewModel : ViewModel() {
         var contentBuffer = ""
 
 
-        streamChat(
+        ApiClient.streamChat(
             request = ChatRequest(messages = newMessages),
             onTokenReceived = { token ->
                 contentBuffer += token
@@ -39,7 +40,7 @@ class ChatViewModel : ViewModel() {
                 Log.d("ChatViewModel", "Stream completed")
             },
             onError = { error ->
-                _messages.value += Message("assistant", "Error: ${error.message}")
+                _messages.value + Message("assistant", "Error: ${error.message}")
                 Log.e("ChatViewModel", "Error: ${error.message}", error)
             }
         )

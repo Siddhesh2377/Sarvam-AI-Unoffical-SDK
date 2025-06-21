@@ -4,29 +4,22 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.dark.sarvamai.compose.screen.ChatScreen
+import com.dark.sarvamai.compose.screen.SetupScreen
 import com.dark.sarvamai.ui.theme.SarvamAiTheme
+import com.dark.sarvamai.utils.UserPrefs
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,63 +27,29 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SarvamAiTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    ChatScreen(innerPadding)
-                }
-            }
-        }
-    }
-}
+                Surface(modifier = Modifier.fillMaxSize()) {
+                    var isSetupComplete by remember { mutableStateOf(true) }
 
-@Composable
-fun ChatScreen(paddingValues: PaddingValues, viewModel: ChatViewModel = viewModel()) {
-    val messages by viewModel.messages.collectAsState()
-    var input by remember { mutableStateOf("Hello Madhav ") }
+                    LaunchedEffect(Unit) {
+                        isSetupComplete = UserPrefs.getApiKey(this@MainActivity).toString() != "none"
+                    }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(paddingValues)
-            .imePadding()
-    ) {
-        LazyColumn(
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 8.dp),
-            contentPadding = PaddingValues(vertical = 8.dp)
-        ) {
-            items(messages) { msg ->
-                Row(modifier = Modifier.padding(4.dp)) {
-                    Text(
-                        text = "${msg.role}: ",
-                        modifier = Modifier.padding(end = 4.dp)
-                    )
-                    RichText(text = msg.content)
-                }
-            }
-        }
-
-        Row(
-            modifier = Modifier
-                .padding(8.dp)
-        ) {
-            TextField(
-                value = input,
-                onValueChange = { input = it },
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 8.dp),
-                placeholder = { Text("Type a message...") }
-            )
-            Button(
-                onClick = {
-                    if (input.isNotBlank()) {
-                        viewModel.sendMessage(input)
-                        input = ""
+                    Scaffold(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .imePadding()
+                    ) { innerPadding ->
+                        AnimatedContent(targetState = isSetupComplete) { completed ->
+                            if (!completed) {
+                                SetupScreen(innerPadding) {
+                                    isSetupComplete = true
+                                }
+                            } else {
+                                ChatScreen(innerPadding)
+                            }
+                        }
                     }
                 }
-            ) {
-                Text("Send")
             }
         }
     }
