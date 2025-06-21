@@ -16,37 +16,36 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
 import com.dark.sarvamai.compose.screen.ChatScreen
 import com.dark.sarvamai.compose.screen.SetupScreen
 import com.dark.sarvamai.ui.theme.SarvamAiTheme
 import com.dark.sarvamai.utils.UserPrefs
+import com.sarvam_ai.sarvam_sdk.api.chat.ApiClient
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent {
-            SarvamAiTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    var isSetupComplete by remember { mutableStateOf(true) }
 
-                    LaunchedEffect(Unit) {
-                        isSetupComplete = UserPrefs.getApiKey(this@MainActivity).toString() != "none"
-                    }
+        val context = this
 
-                    Scaffold(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .imePadding()
-                    ) { innerPadding ->
-                        AnimatedContent(targetState = isSetupComplete) { completed ->
-                            if (!completed) {
-                                SetupScreen(innerPadding) {
-                                    isSetupComplete = true
-                                }
-                            } else {
-                                ChatScreen(innerPadding)
+        lifecycleScope.launch {
+            val apiKey = UserPrefs.getApiKey(context)// This suspends until value is read
+            ApiClient.init(apiKey)
+
+            setContent {
+                SarvamAiTheme {
+                    var isSetupDone by remember { mutableStateOf(apiKey != "none") }
+
+                    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                        if (!isSetupDone) {
+                            SetupScreen(innerPadding) {
+                                isSetupDone = true
                             }
+                        } else {
+                            ChatScreen(innerPadding)
                         }
                     }
                 }
