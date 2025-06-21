@@ -82,7 +82,7 @@ object ApiClient {
                         .getJSONObject("delta")
 
                     // Only emit actual content
-                    val token = delta.optString("content", null)
+                    val token = delta.optString("content", "null")
                     if (delta.isNull("content")) return
                     if (!token.isNullOrBlank()) {
                         onTokenReceived(token)
