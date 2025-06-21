@@ -31,13 +31,7 @@ implementation(project(":sarvam-sdk"))
 
 All required network, SSE, Retrofit, and Moshi dependencies are provided transitively by the SDK.
 
-4. No additional configuration is required; the SDK includes necessary KSP/Moshi setup out of the box.
-
-5.5.0")
-ksp("com.squareup.moshi\:moshi-kotlin-codegen:1.15.0")
-}
-
-5. **Configure your API key** in `local.properties`:
+4. **Configure your API key** in `local.properties`:
 ````
 ```properties
 SARVAM_API_KEY=sk_...
