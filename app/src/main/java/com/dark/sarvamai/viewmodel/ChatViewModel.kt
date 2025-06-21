@@ -3,8 +3,9 @@ package com.dark.sarvamai.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.sarvam_ai.sarvam_sdk.api.chat.ApiClient
-import com.sarvam_ai.sarvam_sdk.api.chat.ChatRequest
-import com.sarvam_ai.sarvam_sdk.api.chat.Message
+import com.sarvam_ai.sarvam_sdk.api.api_interfaces.ChatRequest
+import com.sarvam_ai.sarvam_sdk.api.api_interfaces.Message
+import com.sarvam_ai.sarvam_sdk.api.tts.TTSClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlin.collections.plus
@@ -21,7 +22,7 @@ class ChatViewModel : ViewModel() {
     )
     val messages = _messages.asStateFlow()
 
-    fun sendMessage(userInput: String) {
+    fun sendMessage(userInput: String, onCompletion: (output: String) -> Unit) {
         val newMessages = _messages.value + Message("user", userInput)
         _messages.value = newMessages + Message("assistant", "") // placeholder for streaming
 
@@ -38,6 +39,7 @@ class ChatViewModel : ViewModel() {
             onComplete = {
                 _messages.value = _messages.value.dropLast(1) + Message("assistant", contentBuffer)
                 Log.d("ChatViewModel", "Stream completed")
+                onCompletion(contentBuffer)
             },
             onError = { error ->
                 _messages.value + Message("assistant", "Error: ${error.message}")

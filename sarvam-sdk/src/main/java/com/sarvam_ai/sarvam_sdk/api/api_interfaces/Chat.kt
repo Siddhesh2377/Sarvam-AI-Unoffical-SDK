@@ -1,4 +1,4 @@
-package com.sarvam_ai.sarvam_sdk.api.chat
+package com.sarvam_ai.sarvam_sdk.api.api_interfaces
 
 import com.sarvam_ai.sarvam_sdk.models.Models
 import com.squareup.moshi.JsonClass

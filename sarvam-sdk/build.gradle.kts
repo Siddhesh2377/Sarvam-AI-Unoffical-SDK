@@ -54,6 +54,8 @@ android {
 }
 
 dependencies {
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation(libs.okhttp.sse)
     implementation(libs.moshi.kotlin)
     ksp(libs.moshi.kotlin.codegen)

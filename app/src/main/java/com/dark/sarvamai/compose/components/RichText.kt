@@ -22,6 +22,7 @@ fun RichText(
     text: String,
     modifier: Modifier = Modifier,
     color: Color = Color.Black,
+    textAlign: TextAlign? = TextAlign.Start,
     style: TextStyle = MaterialTheme.typography.bodyMedium
 ) {
     // Pre-compile regex patterns
@@ -73,7 +74,6 @@ fun RichText(
                     }
                     else -> {
                         appendStyledSegment(line)
-                        append("\n\n")
                     }
                 }
             }
@@ -82,10 +82,10 @@ fun RichText(
 
     Text(
         text = annotatedText,
-        modifier = modifier.padding(4.dp),
+        modifier = modifier,
         style = style,
         color = color,
-        textAlign = TextAlign.Justify
+        textAlign = textAlign
     )
 }
 

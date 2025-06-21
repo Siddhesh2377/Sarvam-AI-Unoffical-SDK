@@ -1,7 +1,7 @@
 package com.sarvam_ai.sarvam_sdk.api.chat
 
 import android.util.Log
-import com.sarvam_ai.sarvam_sdk.BuildConfig
+import com.sarvam_ai.sarvam_sdk.api.api_interfaces.ChatRequest
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.MediaType.Companion.toMediaType
