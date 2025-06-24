@@ -104,8 +104,8 @@ The `app/` directory provides:
 ## Screenshots
 
 <p align="center">
-    <img src="img/ss_1.png" alt="SS1" width="200">
-    <img src="img/ss_2.png" alt="SS2" width="200">
+    <img src="img/ss_1.png" alt="SS1" width="300">
+    <img src="img/ss_2.png" alt="SS2" width="300">
 </p>
 
 ## Roadmap
