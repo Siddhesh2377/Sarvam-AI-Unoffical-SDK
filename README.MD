@@ -103,8 +103,11 @@ The `app/` directory provides:
 
 ## Screenshots
 
-* ![SS1](img/ss_1.png)
-* ![SS2](img/ss_2.png)
+<p align="center">
+    <img src="img/ss_1.png" alt="SS1" width="400">
+    <br/>
+    <img src="img/ss_2.png" alt="SS2" width="400">
+</p>
 
 ## Roadmap
 
