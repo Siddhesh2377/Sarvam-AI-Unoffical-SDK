@@ -1,111 +1,114 @@
-# Sarvam AI Unofficial SDK (Chat Module)
+# Sarvam AI Unofficial SDK (Chat, STT, TTS)
 
-An unofficial Kotlin-based Android SDK for interacting with the Sarvam AI chat API. Currently, **only chat** is supported; support for translation, speech-to-text (STT), text-to-speech (TTS), and other modalities will be added in future releases.
+An unofficial Kotlin-based Android SDK for interacting with the Sarvam AI APIs. Currently, chat completion, speech-to-text (STT), and text-to-speech (TTS) are supported.
 
----
+## Features
 
-## 📦 Features
+* Chat Completion: Send a conversation history to Sarvam AI and receive streaming or non-streaming replies.
+* Streaming Support: Real-time token streaming via SSE (OkHttp-SSE).
+* Speech-to-Text (STT) with audio recording helper.
+* Text-to-Speech (TTS) with optional audio playback.
+* Simple Retrofit Integration: Non-streaming chat, STT, and TTS via Retrofit + Moshi/Gson.
+* Easy API Key Management.
+* Incognito Mode: No chats stored.
 
-* **Chat Completion**: Send a conversation history to Sarvam AI and receive streaming or non-streaming replies.
-* **Streaming Support**: Real-time token streaming via SSE (OkHttp-SSE).
-* **Simple Retrofit Integration**: Non-streaming chat via Retrofit + Moshi.
-* **Easy API Key Management**: Pull your API key from `local.properties` or environment variables.
-* **Incognito Mode**: No chats are stored; your conversation history is **not saved**—like private browsing.
+## Installation
 
----
+1. Add the `sarvam-sdk` module or source files to your project.
+2. In `settings.gradle.kts`:
 
-## 🚀 Installation
+```kotlin
+include(":sarvam-sdk")
+```
 
-1. **Add the Maven module** (or copy the `sarvam-sdk` directory) into your Android project.
-
-2. In your **project `settings.gradle.kts`**, include:
-
-   ```kotlin
-   include(":sarvam-sdk")
-   ```
-
-3. **Add the SDK dependency** in your app `build.gradle.kts`:
+3. In your `build.gradle.kts`:
 
 ```kotlin
 implementation(project(":sarvam-sdk"))
 ```
 
-All required network, SSE, Retrofit, and Moshi dependencies are provided transitively by the SDK.
-
-4. **Configure your API key** in `local.properties`:
+4. Add your API key in `local.properties`:
 
 ```properties
 SARVAM_API_KEY=sk_...
 ```
 
-Or set the environment variable `API_KEY` before building.
+Or use an environment variable `API_KEY`.
 
----
+## Usage
 
-## 💡 Usage
+### 1. Chat Completion Example
 
-### 1. Initialize in your Android App
-
-In your `Application` or `MainActivity`, no special initialization is required—just call the client methods.
-
-### 2. Non-Streaming Chat (Retrofit)
+Non-streaming:
 
 ```kotlin
 val messages = listOf(
   Message(role = "system", content = "You are a helpful assistant."),
-  Message(role = "user", content = "Hello, Sarvam!")
+  Message(role = "user", content = "Hello!")
 )
+
 val request = ChatRequest(messages = messages)
 
 lifecycleScope.launch {
-  try {
-    val response = ApiClient.sendChat(request)
-    val reply = response.choices.first().message.content
-    println("Assistant: $reply")
-  } catch (e: Exception) {
-    e.printStackTrace()
-  }
+  val reply = ApiClient.sendChat(request).choices.first().message.content
+  println(reply)
 }
 ```
 
-### 3. Streaming Chat (OkHttp-SSE)
+Streaming:
 
 ```kotlin
 ApiClient.streamChat(
   request = ChatRequest(messages = messages),
-  onTokenReceived = { token -> /* append to text buffer */ },
-  onComplete     = { /* finalize UI */ },
-  onError        = { error -> /* show error */ }
+  onTokenReceived = { token -> print(token) },
+  onComplete = { println("Done") },
+  onError = { it.printStackTrace() }
 )
 ```
 
----
+### 2. Speech-to-Text (STT)
 
-## 📂 Sample App
+```kotlin
+STTClient.init("sk_...")
+STTClient.startRecording(context)
+// After recording
+STTClient.stopRecording(
+  language = Language.ENGLISH,
+  model = STTModels.SAARIKA_V2,
+  onSuccess = { transcript -> println(transcript) },
+  onError = { it.printStackTrace() }
+)
+```
 
-A minimal Jetpack Compose sample is provided in the `app/` directory, showcasing:
+### 3. Text-to-Speech (TTS)
 
-* Chat screen with **scroll-to-bottom**, **keyboard avoidance**, and **rich text** parsing.
-* ViewModel wiring for both streaming and non-streaming calls.
-* API key setup with **local DataStore**.
+```kotlin
+TTSClient.init("sk_...")
+TTSClient.generate(
+  text = "Hello there!",
+  modelId = TTSModels.BULBUL_V2,
+  languageCode = "en-IN",
+  onCompletion = { audioBytes -> TTSClient.playAudio(audioBytes, context) },
+  onError = { it.printStackTrace() }
+)
+```
 
----
+## Sample App
 
-## 🛣 Roadmap
+The `app/` directory provides:
 
-* **v0.2**: Translation API support (text ↔ text)
-* **v0.3**: Speech-to-Text (STT) & Text-to-Speech (TTS)
-* **v0.4**: Image & file upload for GPT vision
-* **v1.0**: Official GitHub release, documentation site, and sample projects
+* Chat screen with Compose.
+* STT and TTS examples.
+* DataStore for API key storage.
 
-Contributions and feedback are welcome. Feel free to open issues and PRs!
+## Roadmap
 
----
+* Translation API support.
+* Image and file upload for GPT vision.
+* Official release with documentation.
 
-## 📜 License
+## License
 
-This SDK is provided **unofficially** under the MIT License. See [LICENSE](LICENSE) for details.
+This SDK is provided unofficially under the MIT License. See `LICENSE` for details.
 
----
-
-> **Note:** This SDK is not affiliated with Sarvam AI. Built for experimental and educational purposes only.
+Note: This SDK is not affiliated with Sarvam AI. Built for experimental purposes only.
