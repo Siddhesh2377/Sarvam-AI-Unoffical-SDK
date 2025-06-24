@@ -1,5 +1,7 @@
 package com.dark.sarvamai.compose.screen
 
+import android.util.Log
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -9,17 +11,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.twotone.Send
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.twotone.GraphicEq
 import androidx.compose.material.icons.twotone.Settings
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
@@ -39,16 +41,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dark.sarvamai.compose.components.ChatMessageList
-import com.dark.sarvamai.compose.components.RichText
 import com.dark.sarvamai.utils.UserPrefs.getApiKey
 import com.dark.sarvamai.viewmodel.ChatViewModel
-import com.sarvam_ai.sarvam_sdk.api.chat.ApiClient.init
+import com.sarvam_ai.sarvam_sdk.api.chat.ChatClient.init
+import com.sarvam_ai.sarvam_sdk.api.stt.STTClient
 import com.sarvam_ai.sarvam_sdk.api.tts.TTSClient
-import com.sarvam_ai.sarvam_sdk.models.Speaker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ChatScreen(paddingValues: PaddingValues, viewModel: ChatViewModel = viewModel()) {
     val messages by viewModel.messages.collectAsState()
@@ -58,10 +60,10 @@ fun ChatScreen(paddingValues: PaddingValues, viewModel: ChatViewModel = viewMode
     LaunchedEffect(Unit) {
         CoroutineScope(Dispatchers.IO).launch {
             init(getApiKey(context).toString())
-            TTSClient.init(context, getApiKey(context).toString())
+            TTSClient.init(getApiKey(context).toString())
+            STTClient.init(getApiKey(context).toString())
         }
     }
-
 
     Column(
         modifier = Modifier
@@ -69,7 +71,6 @@ fun ChatScreen(paddingValues: PaddingValues, viewModel: ChatViewModel = viewMode
             .padding(paddingValues)
             .imePadding()
     ) {
-
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(
                 "Sarvam AI",
@@ -97,9 +98,17 @@ fun ChatScreen(paddingValues: PaddingValues, viewModel: ChatViewModel = viewMode
             }
         }
 
-        ChatMessageList(messages, modifier = Modifier.weight(1f).padding(horizontal = 8.dp)) {
+        ChatMessageList(
+            messages, modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 8.dp)
+        ) { text ->
             CoroutineScope(Dispatchers.IO).launch {
-                TTSClient.fetchAndPlayTTS(it, Speaker.ARYA)
+                TTSClient.generate(text, onCompletion = {
+                    TTSClient.playAudio(it, context)
+                }, onError = {
+                    it.printStackTrace()
+                })
             }
         }
 
@@ -136,19 +145,49 @@ fun ChatScreen(paddingValues: PaddingValues, viewModel: ChatViewModel = viewMode
                     }
                 )
 
+                var record by remember { mutableStateOf(false) }
+
                 IconButton(
                     onClick = {
-
+                        record = !record
+                        CoroutineScope(Dispatchers.IO).launch {
+                            if (record) {
+                                STTClient.startRecording(context.cacheDir.resolve("temp.wav"))
+                            } else {
+                                STTClient.stopRecording()
+                                STTClient.transcribe(
+                                    context.cacheDir.resolve("temp.wav"),
+                                    onCompletion = {
+                                        input = it
+                                        Log.d("ChatScreen", "Transcribed: $it")
+                                    },
+                                    onError = {
+                                        it.printStackTrace()
+                                    }
+                                )
+                            }
+                        }
                     },
                     colors = IconButtonDefaults.iconButtonColors(
                         containerColor = MaterialTheme.colorScheme.tertiary,
                         contentColor = MaterialTheme.colorScheme.onTertiary
                     )
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Mic,
-                        contentDescription = "Settings"
-                    )
+                    AnimatedContent(record, label = "record") {
+                        when (it) {
+                            true -> {
+                                LoadingIndicator()
+                            }
+
+                            false -> {
+                                Icon(
+                                    imageVector = Icons.Default.Mic,
+                                    tint = MaterialTheme.colorScheme.onPrimary,
+                                    contentDescription = "Settings"
+                                )
+                            }
+                        }
+                    }
                 }
 
                 IconButton(
@@ -156,7 +195,7 @@ fun ChatScreen(paddingValues: PaddingValues, viewModel: ChatViewModel = viewMode
                         if (input.isNotBlank()) {
                             viewModel.sendMessage(input) { output ->
                                 CoroutineScope(Dispatchers.IO).launch {
-                            //        TTSClient.fetchAndPlayTTS(output)
+                                    //        TTSClient.fetchAndPlayTTS(output)
                                     input = ""
                                 }
                             }

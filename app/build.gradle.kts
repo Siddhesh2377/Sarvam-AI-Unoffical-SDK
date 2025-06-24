@@ -44,7 +44,6 @@ dependencies {
 
     implementation(project(":sarvam-sdk"))
     implementation(libs.androidx.datastore.preferences)
-    implementation("com.google.accompanist:accompanist-pager:0.34.0")
 
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.core.ktx)

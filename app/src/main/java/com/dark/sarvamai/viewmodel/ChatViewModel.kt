@@ -2,47 +2,50 @@ package com.dark.sarvamai.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.sarvam_ai.sarvam_sdk.api.chat.ApiClient
-import com.sarvam_ai.sarvam_sdk.api.api_interfaces.ChatRequest
 import com.sarvam_ai.sarvam_sdk.api.api_interfaces.Message
-import com.sarvam_ai.sarvam_sdk.api.tts.TTSClient
+import com.sarvam_ai.sarvam_sdk.api.api_interfaces.ROLE
+import com.sarvam_ai.sarvam_sdk.api.chat.ChatClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlin.collections.plus
 
 class ChatViewModel : ViewModel() {
     private val _messages = MutableStateFlow<List<Message>>(
         listOf(
             Message(
-                role = "system",
-                content = "You Are Madhav a Helpfull Assistant"
-
+                role = ROLE.SYSTEM.value,
+                content = "You Are Madhav a Helpful Assistant"
             )
         )
     )
     val messages = _messages.asStateFlow()
 
     fun sendMessage(userInput: String, onCompletion: (output: String) -> Unit) {
-        val newMessages = _messages.value + Message("user", userInput)
-        _messages.value = newMessages + Message("assistant", "") // placeholder for streaming
-
+        val newMessages = _messages.value + Message(ROLE.USER.value, userInput)
         var contentBuffer = ""
 
+        // Add assistant placeholder for UI
+        _messages.value = newMessages + Message(ROLE.ASSISTANT.value, "")
 
-        ApiClient.streamChat(
-            request = ChatRequest(messages = newMessages),
+        ChatClient.chat(
+            history = _messages.value,
+            userInput = userInput,
+            stream = true, // Set false for non-streaming behavior
             onTokenReceived = { token ->
                 contentBuffer += token
-                _messages.value = _messages.value.dropLast(1) + Message("assistant", contentBuffer)
+                _messages.value =
+                    _messages.value.dropLast(1) + Message(ROLE.ASSISTANT.value, contentBuffer)
                 Log.d("ChatViewModel", "Received token: $token")
             },
-            onComplete = {
-                _messages.value = _messages.value.dropLast(1) + Message("assistant", contentBuffer)
+            onComplete = { output, updatedMessages ->
+                _messages.value = updatedMessages
                 Log.d("ChatViewModel", "Stream completed")
-                onCompletion(contentBuffer)
+                onCompletion(output)
             },
             onError = { error ->
-                _messages.value + Message("assistant", "Error: ${error.message}")
+                _messages.value = _messages.value.dropLast(1) + Message(
+                    ROLE.ASSISTANT.value,
+                    "Error: ${error.message}"
+                )
                 Log.e("ChatViewModel", "Error: ${error.message}", error)
             }
         )
