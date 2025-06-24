@@ -27,7 +27,6 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 
-
 @Composable
 fun SarvamAiTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Sarvam Ai</string>
+    <string name="title_activity_assistent">AssistentActivity</string>
 </resources>

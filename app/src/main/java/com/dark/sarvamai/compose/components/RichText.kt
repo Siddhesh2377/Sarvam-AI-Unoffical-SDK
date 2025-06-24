@@ -1,6 +1,5 @@
 package com.dark.sarvamai.compose.components
 
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -9,13 +8,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.dp
 
 @Composable
 fun RichText(
@@ -23,12 +22,14 @@ fun RichText(
     modifier: Modifier = Modifier,
     color: Color = Color.Black,
     textAlign: TextAlign? = TextAlign.Start,
+    fontWeight: FontWeight = FontWeight.Bold,
+    fontFamily: FontFamily = FontFamily.Serif,
     style: TextStyle = MaterialTheme.typography.bodyMedium
 ) {
     // Pre-compile regex patterns
-    val headingRegex      = remember { Regex("^(#{1,6})\\s+(.*)$") }
+    val headingRegex = remember { Regex("^(#{1,6})\\s+(.*)$") }
     val numberedListRegex = remember { Regex("^(\\d+)\\.\\s+(.*)$") }
-    val bulletRegex       = remember { Regex("^[-*+]\\s+(.*)$") }
+    val bulletRegex = remember { Regex("^[-*+]\\s+(.*)$") }
 
     // Map heading levels to span styles
     val headingStyles =
@@ -60,18 +61,21 @@ fun RichText(
                         }
                         append("\n\n")
                     }
+
                     numberedListRegex.matches(line) -> {
                         val (num, content) = numberedListRegex.find(line)!!.destructured
                         append("$num. ")
                         appendStyledSegment(content)
                         append("\n\n")
                     }
+
                     bulletRegex.matches(line) -> {
                         val content = bulletRegex.find(line)!!.groupValues[1]
                         append("• ")
                         appendStyledSegment(content)
                         append("\n\n")
                     }
+
                     else -> {
                         appendStyledSegment(line)
                     }
@@ -85,7 +89,9 @@ fun RichText(
         modifier = modifier,
         style = style,
         color = color,
-        textAlign = textAlign
+        textAlign = textAlign,
+        fontWeight = fontWeight,
+        fontFamily = fontFamily
     )
 }
 
@@ -104,6 +110,7 @@ private fun AnnotatedString.Builder.appendStyledSegment(segment: String) {
                     continue
                 }
             }
+
             segment.startsWith("*", i) -> {
                 val end = segment.indexOf("*", i + 1)
                 if (end != -1) {

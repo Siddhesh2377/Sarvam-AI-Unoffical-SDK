@@ -101,6 +101,11 @@ The `app/` directory provides:
 * STT and TTS examples.
 * DataStore for API key storage.
 
+## Screenshots
+
+* ![SS1](img/ss_1.png)
+* ![SS2](img/ss_2.png)
+
 ## Roadmap
 
 * Translation API support.

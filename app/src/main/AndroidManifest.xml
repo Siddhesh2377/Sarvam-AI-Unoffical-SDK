@@ -15,12 +15,17 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SarvamAi"
         tools:targetApi="31">
+
         <activity
-            android:name=".MainActivity"
+            android:name=".activity.AssistantActivity"
+            android:exported="false"
+            android:theme="@style/Theme.SarvamAi" />
+
+        <activity
+            android:name=".activity.MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
-            android:windowSoftInputMode="adjustResize"
-            android:theme="@style/Theme.SarvamAi">
+            android:theme="@style/Theme.SarvamAi"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

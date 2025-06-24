@@ -1,5 +1,6 @@
-package com.dark.sarvamai.compose.screen
+package com.dark.sarvamai.compose.screen.main
 
+import android.content.Intent
 import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.Crossfade
@@ -40,6 +41,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.dark.sarvamai.activity.AssistantActivity
 import com.dark.sarvamai.compose.components.ChatMessageList
 import com.dark.sarvamai.utils.UserPrefs.getApiKey
 import com.dark.sarvamai.viewmodel.ChatViewModel
@@ -200,6 +202,8 @@ fun ChatScreen(paddingValues: PaddingValues, viewModel: ChatViewModel = viewMode
                                 }
                             }
                             input = ""
+                        }else{
+                            context.startActivity(Intent(context, AssistantActivity::class.java))
                         }
                     },
                     colors = IconButtonDefaults.iconButtonColors(

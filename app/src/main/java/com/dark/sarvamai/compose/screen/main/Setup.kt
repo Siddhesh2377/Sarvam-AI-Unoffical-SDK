@@ -1,5 +1,6 @@
-package com.dark.sarvamai.compose.screen
+package com.dark.sarvamai.compose.screen.main
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -109,9 +110,9 @@ fun SetupScreen(
         Spacer(modifier = Modifier.height(12.dp))
         TextButton(
             onClick = {
-                onComplete()
                 scope.launch {
                     UserPrefs.setApiKey(context, BuildConfig.API_KEY)
+                    onComplete()
                 }
             }
         ) {

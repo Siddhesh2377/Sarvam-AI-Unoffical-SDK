@@ -45,7 +45,10 @@ fun ChatMessageList(
     ) {
         items(messages) { msg ->
             if (msg.role != "system") {
-                Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
+                Column(
+                    modifier = Modifier.padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(18.dp)
+                ) {
                     RichText(
                         text = msg.content.trim(),
                         style = MaterialTheme.typography.bodyLarge,

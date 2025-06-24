@@ -1,6 +1,7 @@
-package com.dark.sarvamai
+package com.dark.sarvamai.activity
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -12,8 +13,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
-import com.dark.sarvamai.compose.screen.ChatScreen
-import com.dark.sarvamai.compose.screen.SetupScreen
+import com.dark.sarvamai.compose.screen.main.ChatScreen
+import com.dark.sarvamai.compose.screen.main.SetupScreen
 import com.dark.sarvamai.ui.theme.SarvamAiTheme
 import com.dark.sarvamai.utils.UserPrefs
 import com.sarvam_ai.sarvam_sdk.api.chat.ChatClient
@@ -34,13 +35,15 @@ class MainActivity : ComponentActivity() {
                 SarvamAiTheme {
                     var isSetupDone by remember { mutableStateOf(apiKey != "none") }
 
-                    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                    Scaffold(modifier = Modifier.Companion.fillMaxSize()) { innerPadding ->
                         if (!isSetupDone) {
                             SetupScreen(innerPadding) {
                                 isSetupDone = true
+                                Log.d("MainActivity", "Setup done")
                             }
                         } else {
                             ChatScreen(innerPadding)
+                            Log.d("MainActivity", "Chat screen")
                         }
                     }
                 }
